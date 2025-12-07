@@ -1,3 +1,5 @@
+# This code has been taken from https://github.com/jackwotherspoon/currency-agent/blob/main/currency_agent/test_client.py
+# I just modified the output to make the JSON print more readable and added more comments
 import os
 import traceback
 from typing import Any
