@@ -1,0 +1,4 @@
+google-adk
+python-dotenv
+google-adk[a2a]
+python-dotenv
