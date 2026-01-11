@@ -1,0 +1,180 @@
+/' ================================================================
+   SEQUENTIAL AGENT PATTERN
+   Sub-agents execute one after another in order
+   ================================================================ '/
+@startuml Sequential_Agent_Pattern
+title Sequential Agent Pattern - Ordered Execution
+participant "User/Runner" as User
+participant SequentialAgent
+participant SubAgent1
+participant SubAgent2
+participant SubAgent3
+participant Session
+User -> SequentialAgent: run_async(ctx)
+activate SequentialAgent
+note over SequentialAgent
+  State: current_sub_agent = null
+  Agents: [SubAgent1, SubAgent2, SubAgent3]
+end note
+SequentialAgent -> SubAgent1: run_async(ctx)
+activate SubAgent1
+SubAgent1 -> SubAgent1: Execute task
+SubAgent1 -> Session: Append events
+SubAgent1 --> SequentialAgent: Yield events
+deactivate SubAgent1
+note over SequentialAgent
+  State: current_sub_agent = SubAgent1
+  ✓ SubAgent1 complete
+end note
+SequentialAgent -> SubAgent2: run_async(ctx)
+activate SubAgent2
+SubAgent2 -> SubAgent2: Execute task\n(sees SubAgent1's output in session)
+SubAgent2 -> Session: Append events
+SubAgent2 --> SequentialAgent: Yield events
+deactivate SubAgent2
+note over SequentialAgent
+  State: current_sub_agent = SubAgent2
+  ✓ SubAgent1, SubAgent2 complete
+end note
+SequentialAgent -> SubAgent3: run_async(ctx)
+activate SubAgent3
+SubAgent3 -> SubAgent3: Execute task\n(sees all previous outputs)
+SubAgent3 -> Session: Append events
+SubAgent3 --> SequentialAgent: Yield events
+deactivate SubAgent3
+note over SequentialAgent
+  State: All agents complete
+  end_of_agent = True
+end note
+SequentialAgent --> User: All events yielded
+deactivate SequentialAgent
+@enduml
+/' ================================================================
+   PARALLEL AGENT PATTERN
+   Sub-agents execute concurrently with context isolation
+   ================================================================ '/
+@startuml Parallel_Agent_Pattern
+title Parallel Agent Pattern - Concurrent Execution
+participant "User/Runner" as User
+participant ParallelAgent
+participant SubAgent1
+participant SubAgent2
+participant SubAgent3
+participant Session
+User -> ParallelAgent: run_async(ctx)
+activate ParallelAgent
+note over ParallelAgent
+  Create isolated contexts for each sub-agent
+  Branch1: ParallelAgent.SubAgent1
+  Branch2: ParallelAgent.SubAgent2
+  Branch3: ParallelAgent.SubAgent3
+end note
+par Execute in Parallel
+    ParallelAgent -> SubAgent1: run_async(branch_ctx1)
+    activate SubAgent1
+    SubAgent1 -> SubAgent1: Execute independently
+    SubAgent1 -> Session: Append events\n(branch: ParallelAgent.SubAgent1)
+else
+    ParallelAgent -> SubAgent2: run_async(branch_ctx2)
+    activate SubAgent2
+    SubAgent2 -> SubAgent2: Execute independently
+    SubAgent2 -> Session: Append events\n(branch: ParallelAgent.SubAgent2)
+else
+    ParallelAgent -> SubAgent3: run_async(branch_ctx3)
+    activate SubAgent3
+    SubAgent3 -> SubAgent3: Execute independently
+    SubAgent3 -> Session: Append events\n(branch: ParallelAgent.SubAgent3)
+end
+SubAgent1 --> ParallelAgent: Events (async generator)
+deactivate SubAgent1
+SubAgent2 --> ParallelAgent: Events (async generator)
+deactivate SubAgent2
+SubAgent3 --> ParallelAgent: Events (async generator)
+deactivate SubAgent3
+note over ParallelAgent
+  Merge and interleave events from all branches
+  Timeline order preserved per agent
+end note
+ParallelAgent -> ParallelAgent: _merge_agent_run()\nInterleave events
+ParallelAgent --> User: Merged events stream
+deactivate ParallelAgent
+note over Session
+  Session contains events from all branches:
+  - ParallelAgent.SubAgent1 events
+  - ParallelAgent.SubAgent2 events
+  - ParallelAgent.SubAgent3 events
+  (isolated from each other)
+end note
+@enduml
+/' ================================================================
+   LOOP AGENT PATTERN
+   Sub-agents execute repeatedly until condition met
+   ================================================================ '/
+@startuml Loop_Agent_Pattern
+title Loop Agent Pattern - Iterative Execution
+participant "User/Runner" as User
+participant LoopAgent
+participant SubAgent
+participant Session
+participant Context
+User -> LoopAgent: run_async(ctx)
+activate LoopAgent
+note over LoopAgent
+  Configuration:
+  - max_iterations: 3
+  - condition_fn: check_completion
+  State: times_looped = 0
+end note
+== Iteration 1 ==
+LoopAgent -> SubAgent: run_async(ctx)
+activate SubAgent
+SubAgent -> SubAgent: Execute task
+SubAgent -> Session: Append events
+SubAgent --> LoopAgent: Yield events
+deactivate SubAgent
+LoopAgent -> Context: reset_sub_agent_states()
+note right: Clear SubAgent state\nfor next iteration
+LoopAgent -> LoopAgent: condition_fn(ctx, state)
+note right: Check: Should continue?
+note over LoopAgent
+  State: times_looped = 1
+  Condition: Continue ✓
+end note
+== Iteration 2 ==
+LoopAgent -> SubAgent: run_async(ctx)
+activate SubAgent
+SubAgent -> SubAgent: Execute task\n(fresh state, sees previous iteration in session)
+SubAgent -> Session: Append events
+SubAgent --> LoopAgent: Yield events
+deactivate SubAgent
+LoopAgent -> Context: reset_sub_agent_states()
+LoopAgent -> LoopAgent: condition_fn(ctx, state)
+note over LoopAgent
+  State: times_looped = 2
+  Condition: Continue ✓
+end note
+== Iteration 3 ==
+LoopAgent -> SubAgent: run_async(ctx)
+activate SubAgent
+SubAgent -> SubAgent: Execute task
+SubAgent -> Session: Append events
+SubAgent --> LoopAgent: Yield events
+deactivate SubAgent
+LoopAgent -> Context: reset_sub_agent_states()
+LoopAgent -> LoopAgent: condition_fn(ctx, state)
+note over LoopAgent
+  State: times_looped = 3
+  Reached max_iterations
+  OR condition_fn returned False
+  → Exit loop
+end note
+LoopAgent --> User: All events from all iterations
+deactivate LoopAgent
+note over Session
+  Session contains chronological events:
+  - Iteration 1 events
+  - Iteration 2 events
+  - Iteration 3 events
+  (Each iteration sees previous iterations)
+end note
+@enduml
