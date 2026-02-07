@@ -3,3 +3,5 @@ python-dotenv
 google-adk[a2a]
 python-dotenv
 google-genai
+pinecone-client
+pinecone
