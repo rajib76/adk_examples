@@ -1,0 +1,32 @@
+product_id: DP_005
+product_name: Transaction Analytics Service
+description: Provides aggregated analytics and insights on transaction patterns
+owner_team: Data Analytics
+sla_tier: Silver
+data_classification: Internal
+capabilities:
+  - Get spending by category
+  - Get monthly spending trends
+  - Get merchant analytics
+  - Get cash flow analysis
+api_endpoints:
+  - endpoint_id: API_007
+    endpoint_url: /api/v1/analytics/{customer_id}/spending
+    method: GET
+    auth_type: OAuth2
+    required_scopes: [analytics:read]
+    rate_limit: 200
+    response_time_p95: 1000ms
+data_sources:
+  - source_id: DS_005
+    source_type: BigQuery
+    dataset: analytics
+    table: customer_spending_summary
+    refresh_frequency: daily
+output_schema:
+  customer_id: string
+  period: string
+  total_spending: decimal
+  categories: array
+  top_merchants: array
+  trends: object
