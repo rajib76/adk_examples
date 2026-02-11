@@ -1,0 +1,28 @@
+-- Insert sample products
+INSERT INTO product_catalog_db.public.products 
+    (product_id, product_code, product_name, product_category, product_type, tagline, description, customer_segment, min_balance, annual_fee, apy, is_featured)
+VALUES
+    ('PRD_SAV_001', 'HY-SAV', 'High-Yield Savings Account', 'deposit_accounts', 'savings', 
+     'Earn more with competitive rates', 
+     'Earn competitive interest rates on your savings with no monthly fees', 
+     'retail', 100.00, 0.00, 4.5, TRUE),
+    
+    ('PRD_CC_001', 'CB-REWARDS', 'Cashback Rewards Credit Card', 'credit_accounts', 'credit_card',
+     'Earn 2% cashback on all purchases',
+     'Premium credit card with unlimited 2% cashback, travel insurance, and purchase protection',
+     'premium', 0.00, 95.00, NULL, TRUE),
+    
+    ('PRD_CHK_001', 'FREE-CHK', 'Free Checking Account', 'deposit_accounts', 'checking',
+     'Banking made simple',
+     'No monthly fees, no minimum balance, free online banking',
+     'all', 0.00, 0.00, NULL, FALSE);
+
+-- Insert sample features
+INSERT INTO product_catalog_db.public.product_features
+    (product_id, feature_name, feature_description, icon_name, is_primary_feature)
+VALUES
+    ('PRD_SAV_001', 'High Interest Rate', 'Earn up to 4.5% APY', 'trending_up', TRUE),
+    ('PRD_SAV_001', 'No Monthly Fees', 'Zero monthly maintenance fees', 'money_off', TRUE),
+    ('PRD_SAV_001', 'FDIC Insured', 'Deposits insured up to $250,000', 'security', FALSE),
+    ('PRD_CC_001', '2% Cashback', 'Earn 2% on all purchases', 'credit_card', TRUE),
+    ('PRD_CC_001', 'Travel Insurance', 'Complimentary travel insurance included', 'flight', TRUE);
