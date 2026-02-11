@@ -1,0 +1,27 @@
+CREATE TABLE product_catalog_db.public.product_eligibility_criteria (
+    criteria_id BIGSERIAL PRIMARY KEY,
+    product_id VARCHAR(50) NOT NULL,
+    criterion_name VARCHAR(200) NOT NULL,
+    criterion_description TEXT,
+    criterion_type VARCHAR(50) NOT NULL,
+    required_value VARCHAR(255),
+    min_value DECIMAL(18,2),
+    max_value DECIMAL(18,2),
+    validation_rule TEXT,
+    is_mandatory BOOLEAN DEFAULT TRUE,
+    display_order INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_criteria_product
+        FOREIGN KEY (product_id)
+        REFERENCES product_catalog_db.public.products(product_id)
+        ON DELETE CASCADE,
+    
+    CONSTRAINT chk_criterion_type
+        CHECK (criterion_type IN ('age', 'credit_score', 'income', 'employment', 'residency', 'account_history', 'debt_to_income', 'other'))
+);
+
+CREATE INDEX idx_criteria_product ON product_catalog_db.public.product_eligibility_criteria(product_id);
+CREATE INDEX idx_criteria_mandatory ON product_catalog_db.public.product_eligibility_criteria(product_id, is_mandatory);
+
+COMMENT ON TABLE product_catalog_db.public.product_eligibility_criteria IS 'Product eligibility and qualification criteria';
