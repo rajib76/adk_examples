@@ -1,0 +1,67 @@
+CREATE TABLE gold.mart_transaction_analytics (
+    analytics_id BIGSERIAL PRIMARY KEY,
+    customer_id VARCHAR(50) NOT NULL,
+    account_id VARCHAR(50),
+    analysis_period VARCHAR(20) NOT NULL,
+    period_start_date DATE NOT NULL,
+    period_end_date DATE NOT NULL,
+    
+    -- Spending Summary
+    total_spending DECIMAL(18,2) DEFAULT 0.00,
+    total_income DECIMAL(18,2) DEFAULT 0.00,
+    net_cash_flow DECIMAL(18,2),
+    transaction_count INTEGER DEFAULT 0,
+    avg_transaction_amount DECIMAL(18,2),
+    
+    -- Category Breakdown (JSONB for flexibility)
+    spending_by_category JSONB,
+    top_categories JSONB,
+    
+    -- Merchant Analytics
+    top_merchants JSONB,
+    merchant_count INTEGER DEFAULT 0,
+    recurring_merchants JSONB,
+    
+    -- Trends
+    month_over_month_change DECIMAL(10,2),
+    trend_direction VARCHAR(20),
+    spending_velocity DECIMAL(10,2),
+    
+    -- Pattern Analysis
+    avg_daily_spending DECIMAL(18,2),
+    max_transaction_amount DECIMAL(18,2),
+    min_transaction_amount DECIMAL(18,2),
+    weekday_vs_weekend_ratio DECIMAL(5,2),
+    
+    -- Insights
+    is_unusual_activity BOOLEAN DEFAULT FALSE,
+    anomaly_score DECIMAL(5,2),
+    recommendations JSONB,
+    
+    -- Metadata
+    last_updated TIMESTAMP NOT NULL,
+    dbt_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT chk_analytics_period
+        CHECK (analysis_period IN ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')),
+    
+    CONSTRAINT chk_trend_direction
+        CHECK (trend_direction IN ('increasing', 'decreasing', 'stable', 'volatile'))
+);
+
+-- Unique constraint on customer + period
+CREATE UNIQUE INDEX idx_analytics_unique ON gold.mart_transaction_analytics(customer_id, analysis_period, period_start_date);
+
+-- Indexes for query performance
+CREATE INDEX idx_analytics_customer ON gold.mart_transaction_analytics(customer_id, period_start_date DESC);
+CREATE INDEX idx_analytics_account ON gold.mart_transaction_analytics(account_id, period_start_date DESC);
+CREATE INDEX idx_analytics_period ON gold.mart_transaction_analytics(analysis_period, period_start_date DESC);
+CREATE INDEX idx_analytics_updated ON gold.mart_transaction_analytics(last_updated DESC);
+
+-- GIN index for JSONB queries
+CREATE INDEX idx_analytics_category ON gold.mart_transaction_analytics USING gin(spending_by_category);
+CREATE INDEX idx_analytics_merchants ON gold.mart_transaction_analytics USING gin(top_merchants);
+
+COMMENT ON TABLE gold.mart_transaction_analytics IS 'Gold layer - Pre-aggregated transaction analytics and spending insights';
+COMMENT ON COLUMN gold.mart_transaction_analytics.spending_by_category IS 'JSON: [{category_name, category_group, amount, percentage, transaction_count}]';
+COMMENT ON COLUMN gold.mart_transaction_analytics.top_merchants IS 'JSON: [{merchant_name, amount, transaction_count, rank}]';
