@@ -1,0 +1,34 @@
+CREATE TABLE gold.mart_customer_accounts (
+    account_id VARCHAR(50) PRIMARY KEY,
+    customer_id VARCHAR(50) NOT NULL,
+    account_number VARCHAR(20) NOT NULL,
+    account_type VARCHAR(50) NOT NULL,
+    account_category VARCHAR(30) NOT NULL,
+    balance DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+    available_balance DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+    currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+    status VARCHAR(20) NOT NULL,
+    opening_date DATE NOT NULL,
+    closing_date DATE,
+    account_age_days INTEGER,
+    interest_rate DECIMAL(5,2),
+    allows_overdraft BOOLEAN,
+    overdraft_limit DECIMAL(18,2),
+    last_transaction_date TIMESTAMP,
+    monthly_fee DECIMAL(10,2) DEFAULT 0.00,
+    annual_fee DECIMAL(10,2) DEFAULT 0.00,
+    last_updated TIMESTAMP NOT NULL,
+    dbt_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT chk_mart_status
+        CHECK (status IN ('active', 'closed', 'suspended', 'dormant', 'frozen'))
+);
+
+-- Indexes for API queries
+CREATE INDEX idx_mart_accounts_customer ON gold.mart_customer_accounts(customer_id);
+CREATE INDEX idx_mart_accounts_status ON gold.mart_customer_accounts(status);
+CREATE INDEX idx_mart_accounts_type ON gold.mart_customer_accounts(account_type);
+CREATE INDEX idx_mart_accounts_updated ON gold.mart_customer_accounts(last_updated DESC);
+
+COMMENT ON TABLE gold.mart_customer_accounts IS 'Gold layer - Complete account information with current balances';
+COMMENT ON COLUMN gold.mart_customer_accounts.dbt_updated_at IS 'Timestamp when dbt last refreshed this record';
