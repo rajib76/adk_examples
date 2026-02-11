@@ -1,0 +1,26 @@
+CREATE TABLE product_catalog_db.public.product_fees (
+    fee_id BIGSERIAL PRIMARY KEY,
+    product_id VARCHAR(50) NOT NULL,
+    fee_type VARCHAR(50) NOT NULL,
+    fee_name VARCHAR(200) NOT NULL,
+    fee_amount DECIMAL(10,2),
+    fee_percentage DECIMAL(5,2),
+    fee_description TEXT,
+    waiver_conditions TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_fee_product
+        FOREIGN KEY (product_id)
+        REFERENCES product_catalog_db.public.products(product_id)
+        ON DELETE CASCADE,
+    
+    CONSTRAINT chk_fee_type
+        CHECK (fee_type IN ('annual', 'monthly', 'transaction', 'overdraft', 'atm', 'wire_transfer', 'late_payment', 'balance_inquiry', 'foreign_transaction', 'maintenance'))
+);
+
+CREATE INDEX idx_fees_product ON product_catalog_db.public.product_fees(product_id);
+CREATE INDEX idx_fees_type ON product_catalog_db.public.product_fees(product_id, fee_type);
+
+COMMENT ON TABLE product_catalog_db.public.product_fees IS 'Product fee structures';
