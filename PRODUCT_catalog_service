@@ -1,0 +1,39 @@
+product_id: DP_004
+product_name: Product Catalog Service
+description: Provides information about banking products and their features
+owner_team: Product Management
+sla_tier: Bronze
+data_classification: Public
+
+capabilities:
+  - List available products
+  - Get product details
+  - Get product eligibility criteria
+  - Compare products
+
+api_endpoints:
+  - endpoint_id: API_006
+    endpoint_url: /api/v1/products
+    method: GET
+    auth_type: API_Key
+    rate_limit: 2000
+    response_time_p95: 200ms
+    query_parameters:
+      - category: string
+      - customer_segment: string
+
+data_sources:
+  - source_id: DS_004
+    source_type: REST_API
+    endpoint: Product Management System
+    refresh_frequency: daily
+
+output_schema:
+  product_id: string
+  product_name: string
+  product_category: string
+  description: string
+  features: array
+  fees: object
+  interest_rate: decimal
+  eligibility_criteria: object
