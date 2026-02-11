@@ -1,0 +1,22 @@
+CREATE TABLE product_catalog_db.public.product_comparison_attributes (
+    attribute_id BIGSERIAL PRIMARY KEY,
+    product_id VARCHAR(50) NOT NULL,
+    attribute_name VARCHAR(100) NOT NULL,
+    attribute_value VARCHAR(500),
+    attribute_data_type VARCHAR(20),
+    is_comparable BOOLEAN DEFAULT TRUE,
+    display_order INTEGER,
+    
+    CONSTRAINT fk_comparison_product
+        FOREIGN KEY (product_id)
+        REFERENCES product_catalog_db.public.products(product_id)
+        ON DELETE CASCADE,
+    
+    CONSTRAINT chk_data_type
+        CHECK (attribute_data_type IN ('string', 'number', 'boolean', 'percentage', 'currency'))
+);
+
+CREATE INDEX idx_comparison_product ON product_catalog_db.public.product_comparison_attributes(product_id);
+CREATE INDEX idx_comparison_name ON product_catalog_db.public.product_comparison_attributes(attribute_name);
+
+COMMENT ON TABLE product_catalog_db.public.product_comparison_attributes IS 'Attributes for product comparison feature';
