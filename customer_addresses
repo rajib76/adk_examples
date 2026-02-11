@@ -1,0 +1,29 @@
+CREATE TABLE customer_data_db.public.customer_addresses (
+    address_id BIGSERIAL PRIMARY KEY,
+    customer_id VARCHAR(50) NOT NULL,
+    address_type VARCHAR(20) NOT NULL,
+    address_line1 VARCHAR(200) NOT NULL,
+    address_line2 VARCHAR(200),
+    city VARCHAR(100) NOT NULL,
+    state_province VARCHAR(50),
+    postal_code VARCHAR(20),
+    country_code VARCHAR(3) NOT NULL DEFAULT 'USA',
+    is_primary BOOLEAN DEFAULT FALSE,
+    valid_from DATE NOT NULL,
+    valid_to DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_address_customer
+        FOREIGN KEY (customer_id)
+        REFERENCES customer_data_db.public.customers(customer_id)
+        ON DELETE CASCADE,
+    
+    CONSTRAINT chk_address_type
+        CHECK (address_type IN ('residential', 'mailing', 'business', 'billing'))
+);
+
+CREATE INDEX idx_addresses_customer ON customer_data_db.public.customer_addresses(customer_id);
+CREATE INDEX idx_addresses_postal ON customer_data_db.public.customer_addresses(postal_code);
+
+COMMENT ON TABLE customer_data_db.public.customer_addresses IS 'Customer address history';
