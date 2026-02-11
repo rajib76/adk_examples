@@ -1,0 +1,33 @@
+CREATE TABLE core_banking_db.public.account_balances (
+    balance_id BIGSERIAL PRIMARY KEY,
+    account_id VARCHAR(50) NOT NULL,
+    balance DECIMAL(18,2) NOT NULL,
+    available_balance DECIMAL(18,2) NOT NULL,
+    pending_credits DECIMAL(18,2) DEFAULT 0.00,
+    pending_debits DECIMAL(18,2) DEFAULT 0.00,
+    currency_code VARCHAR(3) NOT NULL DEFAULT 'USD',
+    balance_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    balance_type VARCHAR(20) DEFAULT 'CURRENT',
+    
+    CONSTRAINT fk_balance_account
+        FOREIGN KEY (account_id)
+        REFERENCES core_banking_db.public.accounts(account_id)
+        ON DELETE CASCADE,
+    
+    CONSTRAINT chk_balance_positive
+        CHECK (balance >= 0 OR account_id IN (
+            SELECT account_id FROM accounts WHERE account_type_code IN ('CC', 'LOC')
+        ))
+);
+
+-- Indexes
+CREATE INDEX idx_balances_account_id ON core_banking_db.public.account_balances(account_id);
+CREATE INDEX idx_balances_timestamp ON core_banking_db.public.account_balances(balance_timestamp DESC);
+CREATE INDEX idx_balances_account_timestamp ON core_banking_db.public.account_balances(account_id, balance_timestamp DESC);
+
+-- Partitioning by month for performance
+CREATE TABLE core_banking_db.public.account_balances_y2026m02 
+    PARTITION OF core_banking_db.public.account_balances
+    FOR VALUES FROM ('2026-02-01') TO ('2026-03-01');
+
+COMMENT ON TABLE core_banking_db.public.account_balances IS 'Real-time account balance snapshots';
