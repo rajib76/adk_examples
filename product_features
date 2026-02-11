@@ -1,0 +1,21 @@
+CREATE TABLE product_catalog_db.public.product_features (
+    feature_id BIGSERIAL PRIMARY KEY,
+    product_id VARCHAR(50) NOT NULL,
+    feature_name VARCHAR(200) NOT NULL,
+    feature_description TEXT,
+    feature_category VARCHAR(50),
+    icon_name VARCHAR(50),
+    display_order INTEGER,
+    is_primary_feature BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_feature_product
+        FOREIGN KEY (product_id)
+        REFERENCES product_catalog_db.public.products(product_id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX idx_features_product ON product_catalog_db.public.product_features(product_id);
+CREATE INDEX idx_features_primary ON product_catalog_db.public.product_features(product_id, is_primary_feature);
+
+COMMENT ON TABLE product_catalog_db.public.product_features IS 'Product features and benefits';
