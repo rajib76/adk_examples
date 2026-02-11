@@ -1,0 +1,52 @@
+CREATE TABLE product_catalog_db.public.products (
+    product_id VARCHAR(50) PRIMARY KEY,
+    product_code VARCHAR(20) UNIQUE NOT NULL,
+    product_name VARCHAR(200) NOT NULL,
+    product_category VARCHAR(50) NOT NULL,
+    product_type VARCHAR(50) NOT NULL,
+    tagline VARCHAR(255),
+    description TEXT,
+    long_description TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_featured BOOLEAN DEFAULT FALSE,
+    customer_segment VARCHAR(30),
+    min_age INTEGER DEFAULT 18,
+    max_age INTEGER,
+    credit_score_required VARCHAR(20),
+    min_income DECIMAL(18,2),
+    min_opening_deposit DECIMAL(18,2),
+    min_balance DECIMAL(18,2),
+    annual_fee DECIMAL(10,2) DEFAULT 0.00,
+    monthly_fee DECIMAL(10,2) DEFAULT 0.00,
+    base_interest_rate DECIMAL(5,2),
+    apy DECIMAL(5,2),
+    apr DECIMAL(5,2),
+    promotional_rate DECIMAL(5,2),
+    promotional_period_months INTEGER,
+    terms_and_conditions_url VARCHAR(500),
+    apply_url VARCHAR(500),
+    display_order INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+    
+    CONSTRAINT chk_product_category
+        CHECK (product_category IN ('deposit_accounts', 'credit_accounts', 'loans', 'investments', 'insurance')),
+    
+    CONSTRAINT chk_customer_segment
+        CHECK (customer_segment IN ('retail', 'premium', 'business', 'student', 'all'))
+);
+
+-- Indexes
+CREATE INDEX idx_products_category ON product_catalog_db.public.products(product_category);
+CREATE INDEX idx_products_type ON product_catalog_db.public.products(product_type);
+CREATE INDEX idx_products_segment ON product_catalog_db.public.products(customer_segment);
+CREATE INDEX idx_products_active ON product_catalog_db.public.products(is_active, is_featured);
+CREATE INDEX idx_products_display ON product_catalog_db.public.products(display_order);
+
+-- Full-text search on product descriptions
+CREATE INDEX idx_products_search ON product_catalog_db.public.products 
+    USING gin(to_tsvector('english', product_name || ' ' || COALESCE(description, '')));
+
+COMMENT ON TABLE product_catalog_db.public.products IS 'Banking product catalog master data';
