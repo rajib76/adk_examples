@@ -1,0 +1,71 @@
+CREATE TABLE gold.mart_customer_360 (
+    customer_id VARCHAR(50) PRIMARY KEY,
+    customer_number VARCHAR(20) UNIQUE NOT NULL,
+    customer_type VARCHAR(20) NOT NULL,
+    
+    -- Personal Information
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    full_name VARCHAR(200),
+    date_of_birth DATE,
+    age INTEGER,
+    email VARCHAR(255),
+    phone_number VARCHAR(20),
+    mobile_number VARCHAR(20),
+    preferred_language VARCHAR(10) DEFAULT 'en',
+    
+    -- Address (Primary)
+    primary_address_line1 VARCHAR(200),
+    primary_address_line2 VARCHAR(200),
+    primary_city VARCHAR(100),
+    primary_state VARCHAR(50),
+    primary_postal_code VARCHAR(20),
+    primary_country VARCHAR(3) DEFAULT 'USA',
+    
+    -- Customer Lifecycle
+    customer_since DATE NOT NULL,
+    tenure_months INTEGER,
+    customer_status VARCHAR(20) NOT NULL,
+    customer_segment VARCHAR(30),
+    risk_rating VARCHAR(10),
+    kyc_status VARCHAR(20),
+    
+    -- Account Summary
+    total_accounts INTEGER DEFAULT 0,
+    active_accounts INTEGER DEFAULT 0,
+    total_balance DECIMAL(18,2) DEFAULT 0.00,
+    total_deposits DECIMAL(18,2) DEFAULT 0.00,
+    total_credit_limit DECIMAL(18,2) DEFAULT 0.00,
+    
+    -- Relationship Metrics
+    primary_account_id VARCHAR(50),
+    primary_relationship_manager VARCHAR(100),
+    last_login_date TIMESTAMP,
+    last_transaction_date TIMESTAMP,
+    is_digital_active BOOLEAN DEFAULT FALSE,
+    login_count_30d INTEGER DEFAULT 0,
+    
+    -- Metadata
+    last_updated TIMESTAMP NOT NULL,
+    dbt_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT chk_mart_customer_status
+        CHECK (customer_status IN ('active', 'inactive', 'suspended', 'closed')),
+    
+    CONSTRAINT chk_mart_customer_type
+        CHECK (customer_type IN ('individual', 'business', 'joint'))
+);
+
+-- Indexes
+CREATE INDEX idx_mart_c360_segment ON gold.mart_customer_360(customer_segment);
+CREATE INDEX idx_mart_c360_status ON gold.mart_customer_360(customer_status);
+CREATE INDEX idx_mart_c360_tenure ON gold.mart_customer_360(tenure_months DESC);
+CREATE INDEX idx_mart_c360_balance ON gold.mart_customer_360(total_balance DESC);
+CREATE INDEX idx_mart_c360_email ON gold.mart_customer_360(email);
+CREATE INDEX idx_mart_c360_postal ON gold.mart_customer_360(primary_postal_code);
+
+-- Full-text search on customer names
+CREATE INDEX idx_mart_c360_name_search ON gold.mart_customer_360 
+    USING gin(to_tsvector('english', COALESCE(full_name, '') || ' ' || COALESCE(email, '')));
+
+COMMENT ON TABLE gold.mart_customer_360 IS 'Gold layer - Complete 360-degree customer view with account aggregations';
