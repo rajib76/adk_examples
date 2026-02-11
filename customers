@@ -1,0 +1,39 @@
+CREATE TABLE customer_data_db.public.customers (
+    customer_id VARCHAR(50) PRIMARY KEY,
+    customer_number VARCHAR(20) UNIQUE NOT NULL,
+    customer_type VARCHAR(20) NOT NULL,
+    first_name VARCHAR(100),
+    middle_name VARCHAR(100),
+    last_name VARCHAR(100),
+    date_of_birth DATE,
+    tax_id VARCHAR(50),
+    email VARCHAR(255),
+    phone_number VARCHAR(20),
+    mobile_number VARCHAR(20),
+    customer_since DATE NOT NULL,
+    customer_segment VARCHAR(30),
+    risk_rating VARCHAR(10),
+    kyc_status VARCHAR(20),
+    customer_status VARCHAR(20) NOT NULL,
+    preferred_language VARCHAR(10) DEFAULT 'en',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT chk_customer_type
+        CHECK (customer_type IN ('individual', 'business', 'joint')),
+    
+    CONSTRAINT chk_customer_status
+        CHECK (customer_status IN ('active', 'inactive', 'suspended', 'closed'))
+);
+
+-- Indexes
+CREATE INDEX idx_customers_email ON customer_data_db.public.customers(email);
+CREATE INDEX idx_customers_segment ON customer_data_db.public.customers(customer_segment);
+CREATE INDEX idx_customers_status ON customer_data_db.public.customers(customer_status);
+CREATE INDEX idx_customers_name ON customer_data_db.public.customers(last_name, first_name);
+
+-- PII encryption (conceptual - implementation depends on database)
+-- ALTER TABLE customer_data_db.public.customers 
+--     ALTER COLUMN tax_id TYPE encrypted_varchar;
+
+COMMENT ON TABLE customer_data_db.public.customers IS 'Customer master data with PII';
