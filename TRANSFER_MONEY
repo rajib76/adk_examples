@@ -1,0 +1,36 @@
+intent_id: INT_007
+intent_name: TRANSFER_MONEY
+description: User wants to transfer money between accounts or to another person
+intent_group: Payment & Transfer
+priority: high
+
+slots:
+  - slot_name: source_account
+    entity_type: ACCOUNT_ID
+    is_required: true
+    prompt_question: "Which account would you like to transfer from?"
+    
+  - slot_name: destination_account
+    entity_type: ACCOUNT_ID
+    is_required: true
+    prompt_question: "Where would you like to transfer to?"
+    
+  - slot_name: amount
+    entity_type: AMOUNT
+    is_required: true
+    prompt_question: "How much would you like to transfer?"
+    validation_rules: check_sufficient_balance
+    
+  - slot_name: transfer_date
+    entity_type: DATE
+    is_required: false
+    default: today
+    
+  - slot_name: memo
+    entity_type: STRING
+    is_required: false
+
+domain_mapping:
+  - data_product: Transfer Service
+  - data_product: Account Service
+  - data_product: Fraud Detection Service
