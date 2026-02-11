@@ -1,0 +1,36 @@
+CREATE TABLE core_banking_db.public.accounts (
+    account_id VARCHAR(50) PRIMARY KEY,
+    customer_id VARCHAR(50) NOT NULL,
+    account_number VARCHAR(20) UNIQUE NOT NULL,
+    account_type_code VARCHAR(10) NOT NULL,
+    status_code VARCHAR(10) NOT NULL,
+    opening_date TIMESTAMP NOT NULL,
+    closing_date TIMESTAMP NULL,
+    branch_code VARCHAR(10),
+    account_officer_id VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+    
+    CONSTRAINT fk_customer
+        FOREIGN KEY (customer_id)
+        REFERENCES core_banking_db.public.customers(customer_id),
+    
+    CONSTRAINT fk_account_type
+        FOREIGN KEY (account_type_code)
+        REFERENCES core_banking_db.reference.account_types(account_type_code),
+    
+    CONSTRAINT chk_status 
+        CHECK (status_code IN ('A', 'C', 'S', 'D', 'F'))
+);
+
+-- Indexes for performance
+CREATE INDEX idx_accounts_customer_id ON core_banking_db.public.accounts(customer_id);
+CREATE INDEX idx_accounts_status ON core_banking_db.public.accounts(status_code);
+CREATE INDEX idx_accounts_type ON core_banking_db.public.accounts(account_type_code);
+CREATE INDEX idx_accounts_updated_at ON core_banking_db.public.accounts(updated_at);
+
+-- Comments
+COMMENT ON TABLE core_banking_db.public.accounts IS 'Core account master data';
+COMMENT ON COLUMN core_banking_db.public.accounts.status_code IS 'A=Active, C=Closed, S=Suspended, D=Dormant, F=Frozen';
