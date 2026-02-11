@@ -1,0 +1,27 @@
+CREATE TABLE reference_db.public.merchants (
+    merchant_id VARCHAR(50) PRIMARY KEY,
+    merchant_name VARCHAR(200) NOT NULL,
+    legal_name VARCHAR(200),
+    merchant_category_code VARCHAR(10) NOT NULL,
+    merchant_type VARCHAR(30),
+    website_url VARCHAR(500),
+    phone_number VARCHAR(20),
+    merchant_location JSONB,
+    logo_url VARCHAR(500),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_merchant_category
+        FOREIGN KEY (merchant_category_code)
+        REFERENCES reference_db.public.transaction_categories(merchant_category_code)
+);
+
+-- Indexes
+CREATE INDEX idx_merchants_category ON reference_db.public.merchants(merchant_category_code);
+CREATE INDEX idx_merchants_name ON reference_db.public.merchants 
+    USING gin(to_tsvector('english', merchant_name));
+CREATE INDEX idx_merchants_location ON reference_db.public.merchants USING gin(merchant_location);
+
+COMMENT ON TABLE reference_db.public.merchants IS 'Merchant master data';
+COMMENT ON COLUMN reference_db.public.merchants.merchant_location IS 'JSON: {city, state, country, postal_code, latitude, longitude}';
