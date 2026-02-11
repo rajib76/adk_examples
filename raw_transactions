@@ -1,0 +1,49 @@
+CREATE TABLE transaction_db.public.raw_transactions (
+    transaction_id VARCHAR(100) PRIMARY KEY,
+    account_id VARCHAR(50) NOT NULL,
+    transaction_timestamp TIMESTAMP NOT NULL,
+    post_date DATE,
+    transaction_type_code VARCHAR(10) NOT NULL,
+    amount DECIMAL(18,2) NOT NULL,
+    currency_code VARCHAR(3) NOT NULL DEFAULT 'USD',
+    merchant_id VARCHAR(50),
+    description TEXT,
+    reference_number VARCHAR(100),
+    channel VARCHAR(20),
+    status VARCHAR(20) NOT NULL,
+    authorization_code VARCHAR(50),
+    card_last_four VARCHAR(4),
+    payment_method VARCHAR(30),
+    running_balance DECIMAL(18,2),
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT chk_txn_status
+        CHECK (status IN ('pending', 'completed', 'settled', 'posted', 'cancelled', 'failed', 'reversed')),
+    
+    CONSTRAINT chk_txn_type
+        CHECK (transaction_type_code IN ('PUR', 'WTH', 'DEP', 'TRF', 'FEE', 'INT', 'DIV', 'ADJ'))
+);
+
+-- Indexes for high-volume queries
+CREATE INDEX idx_transactions_account_id ON transaction_db.public.raw_transactions(account_id);
+CREATE INDEX idx_transactions_timestamp ON transaction_db.public.raw_transactions(transaction_timestamp DESC);
+CREATE INDEX idx_transactions_account_timestamp 
+    ON transaction_db.public.raw_transactions(account_id, transaction_timestamp DESC);
+CREATE INDEX idx_transactions_merchant ON transaction_db.public.raw_transactions(merchant_id);
+CREATE INDEX idx_transactions_status ON transaction_db.public.raw_transactions(status);
+CREATE INDEX idx_transactions_type ON transaction_db.public.raw_transactions(transaction_type_code);
+
+-- Partial index for active transactions
+CREATE INDEX idx_transactions_active 
+    ON transaction_db.public.raw_transactions(account_id, transaction_timestamp DESC)
+    WHERE status IN ('completed', 'settled', 'posted');
+
+-- Partitioning by month
+CREATE TABLE transaction_db.public.raw_transactions_y2026m02
+    PARTITION OF transaction_db.public.raw_transactions
+    FOR VALUES FROM ('2026-02-01 00:00:00') TO ('2026-03-01 00:00:00');
+
+COMMENT ON TABLE transaction_db.public.raw_transactions IS 'Raw transaction events from payment processing';
+COMMENT ON COLUMN transaction_db.public.raw_transactions.transaction_type_code IS 'PUR=Purchase, WTH=Withdrawal, DEP=Deposit, TRF=Transfer, FEE=Fee, INT=Interest, DIV=Dividend, ADJ=Adjustment';
