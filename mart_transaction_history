@@ -1,0 +1,54 @@
+CREATE TABLE gold.mart_transaction_history (
+    transaction_id VARCHAR(100) PRIMARY KEY,
+    account_id VARCHAR(50) NOT NULL,
+    customer_id VARCHAR(50) NOT NULL,
+    transaction_date TIMESTAMP NOT NULL,
+    post_date DATE NOT NULL,
+    transaction_type VARCHAR(30) NOT NULL,
+    transaction_category VARCHAR(50),
+    amount DECIMAL(18,2) NOT NULL,
+    currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+    description TEXT,
+    merchant_name VARCHAR(200),
+    merchant_id VARCHAR(50),
+    merchant_category VARCHAR(100),
+    merchant_category_group VARCHAR(50),
+    merchant_location JSONB,
+    is_debit BOOLEAN,
+    is_recurring BOOLEAN DEFAULT FALSE,
+    payment_method VARCHAR(30),
+    channel VARCHAR(20),
+    running_balance DECIMAL(18,2),
+    status VARCHAR(20) NOT NULL,
+    dbt_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT chk_mart_txn_status
+        CHECK (status IN ('completed', 'settled', 'posted')),
+    
+    CONSTRAINT chk_mart_txn_type
+        CHECK (transaction_type IN ('purchase', 'withdrawal', 'deposit', 'transfer', 'fee', 'interest', 'dividend', 'adjustment'))
+);
+
+-- Partitioning by month for performance
+CREATE TABLE gold.mart_transaction_history_y2026m02
+    PARTITION OF gold.mart_transaction_history
+    FOR VALUES FROM ('2026-02-01 00:00:00') TO ('2026-03-01 00:00:00');
+
+CREATE TABLE gold.mart_transaction_history_y2026m03
+    PARTITION OF gold.mart_transaction_history
+    FOR VALUES FROM ('2026-03-01 00:00:00') TO ('2026-04-01 00:00:00');
+
+-- Indexes for high-performance API queries
+CREATE INDEX idx_mart_txn_account_date ON gold.mart_transaction_history(account_id, transaction_date DESC);
+CREATE INDEX idx_mart_txn_customer_date ON gold.mart_transaction_history(customer_id, transaction_date DESC);
+CREATE INDEX idx_mart_txn_type ON gold.mart_transaction_history(transaction_type);
+CREATE INDEX idx_mart_txn_category ON gold.mart_transaction_history(merchant_category_group, transaction_date DESC);
+CREATE INDEX idx_mart_txn_merchant ON gold.mart_transaction_history(merchant_id);
+CREATE INDEX idx_mart_txn_amount ON gold.mart_transaction_history(amount);
+
+-- Partial index for recent transactions (last 90 days)
+CREATE INDEX idx_mart_txn_recent 
+    ON gold.mart_transaction_history(account_id, transaction_date DESC)
+    WHERE transaction_date >= CURRENT_DATE - INTERVAL '90 days';
+
+COMMENT ON TABLE gold.mart_transaction_history IS 'Gold layer - Enriched transaction history with merchant data';
