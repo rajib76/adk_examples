@@ -1,0 +1,32 @@
+CREATE TABLE reference_db.public.transaction_categories (
+    merchant_category_code VARCHAR(10) PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL,
+    category_group VARCHAR(50) NOT NULL,
+    category_description TEXT,
+    icon_name VARCHAR(50),
+    color_code VARCHAR(7),
+    is_discretionary BOOLEAN DEFAULT TRUE,
+    parent_category_code VARCHAR(10),
+    sort_order INTEGER,
+    
+    CONSTRAINT fk_parent_category
+        FOREIGN KEY (parent_category_code)
+        REFERENCES reference_db.public.transaction_categories(merchant_category_code)
+);
+
+-- Seed major categories
+INSERT INTO reference_db.public.transaction_categories 
+    (merchant_category_code, category_name, category_group, is_discretionary)
+VALUES
+    ('5411', 'Grocery Stores', 'Food & Drink', FALSE),
+    ('5812', 'Restaurants', 'Food & Drink', TRUE),
+    ('5541', 'Gas Stations', 'Transportation', FALSE),
+    ('5912', 'Pharmacies', 'Healthcare', FALSE),
+    ('5311', 'Department Stores', 'Shopping', TRUE),
+    ('5999', 'General Merchandise', 'Shopping', TRUE),
+    ('4900', 'Utilities', 'Bills & Utilities', FALSE),
+    ('6011', 'ATM Cash Withdrawal', 'Cash & Checks', FALSE);
+
+CREATE INDEX idx_categories_group ON reference_db.public.transaction_categories(category_group);
+
+COMMENT ON TABLE reference_db.public.transaction_categories IS 'Transaction category mappings based on ISO 18245 MCC codes';
