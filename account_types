@@ -1,0 +1,29 @@
+CREATE TABLE core_banking_db.reference.account_types (
+    account_type_code VARCHAR(10) PRIMARY KEY,
+    account_type_name VARCHAR(50) NOT NULL,
+    account_category VARCHAR(30) NOT NULL,
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    allows_overdraft BOOLEAN DEFAULT FALSE,
+    interest_bearing BOOLEAN DEFAULT FALSE,
+    minimum_balance DECIMAL(18,2) DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT chk_category
+        CHECK (account_category IN ('deposit_account', 'credit_account', 'investment_account', 'loan_account'))
+);
+
+-- Seed reference data
+INSERT INTO core_banking_db.reference.account_types 
+    (account_type_code, account_type_name, account_category, interest_bearing) 
+VALUES
+    ('CHK', 'Checking Account', 'deposit_account', FALSE),
+    ('SAV', 'Savings Account', 'deposit_account', TRUE),
+    ('MMA', 'Money Market Account', 'deposit_account', TRUE),
+    ('CC', 'Credit Card', 'credit_account', FALSE),
+    ('LOC', 'Line of Credit', 'credit_account', FALSE),
+    ('IRA', 'Individual Retirement Account', 'investment_account', TRUE),
+    ('BRK', 'Brokerage Account', 'investment_account', FALSE);
+
+COMMENT ON TABLE core_banking_db.reference.account_types IS 'Account type reference data';
