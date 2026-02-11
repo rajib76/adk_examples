@@ -1,0 +1,14 @@
+intent_id: INT_004
+intent_name: VIEW_CUSTOMER_PROFILE
+description: User wants to view their profile information
+intent_group: Customer Profile
+priority: medium
+slots:
+  - slot_name: profile_section
+    entity_type: PROFILE_SECTION
+    is_required: false
+    default: summary
+    
+domain_mapping:
+  - data_product: Customer Profile Service
+  - data_product: Customer 360 Service
