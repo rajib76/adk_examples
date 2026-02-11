@@ -1,0 +1,20 @@
+intent_id: INT_005
+intent_name: EXPLORE_PRODUCTS
+description: User wants to explore banking products
+intent_group: Product Discovery
+priority: medium
+slots:
+  - slot_name: product_category
+    entity_type: PRODUCT_CATEGORY
+    is_required: false
+    prompt_question: "What type of product are you interested in?"
+    
+  - slot_name: customer_segment
+    entity_type: STRING
+    is_required: false
+    # Derived from customer profile
+    
+domain_mapping:
+  - data_product: Product Catalog Service
+  - data_product: Personalization Service
+  - data_product: Customer Profile Service
